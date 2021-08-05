@@ -1,11 +1,12 @@
+
+CREATE TABLE IF NOT EXISTS genre (
+  genre_id SERIAL PRIMARY KEY, 
+  title_genres VARCHAR(50) NOT NULL
+);
 CREATE TABLE IF NOT EXISTS artist (
   artist_id SERIAL PRIMARY KEY, 
   name VARCHAR(30) NOT NULL,
   genre_genre_id INTEGER REFERENCES genre(genre_id) NOT NULL
-);
-CREATE TABLE IF NOT EXISTS genre (
-  genere_id SERIAL PRIMARY KEY, 
-  title_genres VARCHAR(50) NOT NULL
 );
 CREATE TABLE IF NOT EXISTS album (
   album_id SERIAL PRIMARY KEY, 
