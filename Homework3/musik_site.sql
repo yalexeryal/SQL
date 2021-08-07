@@ -46,5 +46,5 @@ genre_genre_id INTEGER REFERENCES genre(genre_id) NOT NULL
 CREATE TABLE IF NOT EXISTS track_collection (
 track_collection_id SERIAL PRIMARY KEY,
 track_track_id INTEGER REFERENCES track(track_id),
-collection_colection_id INTEGER REFERENCES collection(collection_id)
+collection_collection_id INTEGER REFERENCES collection(collection_id)
 );
