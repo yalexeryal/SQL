@@ -29,14 +29,16 @@ db = 'postgresql://neto20210730:neto20210730@localhost:5432/neto0730'
 engine = sqlalchemy.create_engine(db)
 connection = engine.connect()
 
-# connection.execute("""INSERT INTO track_collection (track_track_id, collection_collection_id) VALUES (18, 1), (19, 2),
-# (20, 3), (21, 4), (22, 5), (23, 6), (24, 7), (25, 8)""")
+"""Заполнение таблицы genre"""
+connection.execute("""INSERT INTO genre (title_genre) VALUES ('поп', 'Рок', 'рэп', 'электронная музыка', 'шансон', 'метал', 'классика', 'rnb', 'house', 'кантри',
+          'джаз', 'инструментальная', 'танцевальная музыка')""")
+
 
 # connection.execute("""INSERT INTO artist_genre(artist_artist_id, genre_genre_id) VALUES(8, 1)""")
 # connection.execute("""DELETE FROM collection WHERE collection_id = 3;""")
 
 
-res = connection.execute("""SELECT track_collection_id, track_track_id, collection_collection_id 
-FROM track_collection; """).fetchall()
+res = connection.execute("""SELECT genre_id, title_genre 
+FROM genre; """).fetchall()
 
 pprint(res)

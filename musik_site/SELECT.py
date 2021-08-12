@@ -2,36 +2,9 @@ import sqlalchemy
 import psycopg2
 from pprint import pprint
 
-
-
-artists = ['Ария', 'Филипп Киркоров', 'StaFFорд63', 'Chris Stapleton', 'Andrea Bocelli', 'Powerwolf', 'Medsound',
-           'Gorgon City', 'Kid Ory', 'Ketty Lester', 'Big Noise', 'Santana', 'Lordi', 'Люся Чеботина', 'Gidayyat']
-genres = ['поп', 'Рок', 'рэп', 'электронная музыка', 'шансон', 'метал', 'классика', 'rnb', 'house', 'кантри',
-          'джаз', 'инструментальная', 'танцевальная музыка']
-albums = [('Мания величия', 1985), ('Незнакомка', 2003), ('10 Историй', 2021), ('Traveller', 2015),
-          ('Базара Нет', 2021), ('Cinema', 2016), ('Blessed & Possessed ', 2015), ('A Journey To House ', 2018),
-          ('Olympia', 2021)]
-tracks = [('Это Мой Рок', 5.54, 1), ('Роза чайная', 4.22, 2), ('Жестокая любовь', 3.47, 2),
-          ('Вы Простите Меня', 3.19, 3),
-          ('Глубоко в Сердце', 2.45, 3), ('Might As Well Get Stoned', 4.53, 4), ('Whiskey And You', 3.56, 4),
-          ('Малой', 4.22, 5), ('Рубаха Парень', 3.46, 5), ('From Breakfast At Tiffany', 3.49, 6),
-          ('Moon River', 4.21, 6),
-          ('Let There Be Night', 7.19, 7), ('Dead Until Dark', 3.49, 7), ('Distant Frequencies', 4.56, 8),
-          ('When We Fly', 6.20, 8), ('Lost Feelings', 4.17, 9), ('Sweet Temptation', 3.40, 9), ('Лунная Соната', 6.35),
-          ('Someday Sweetheart', 8.22), (' Love Letters', 2.37), ('Keep On Pushing', 7.34), ('Ballin', 6.10),
-          ('Hard Rock Halllujah', 4.08), ('Trend', 2.21), ('Акунаматата', 2.01)]
-collection = [('Шедевры Классики', 2013), ('The Complete Kid Ory Verve Sessions', 1999),
-              ('Anthology: First Recordings', 2020), ('Best Of Underground Dance', 1994), ('Folsom Street', 1971),
-              ('Хиты всех времён', 2021), ('Весёлые песни для гулянки', 2021), ('Молодёжные', 2021)]
-artist_album = [(1, 1), (2, 2), (3, 3), (4, 4), (3, 5), (5, 6), (6, 7), (7, 8), (8, 9)]
-artist_genre = [(1, 2), (2, 1), (3, 3), (4, 10), (3, 5), (5, 7), (6, 6), (7, 9), (8, 13), (9, 9), (10, 1), (11, 9),
-                (12, 1), (13, 6), (14, 1), (15, 3)]
-track_collection = [(18, 1), (19, 2), (20, 3), (21, 4), (22, 5), (23, 6), (24, 7), (25, 8)]
-
 db = 'postgresql://neto20210730:neto20210730@localhost:5432/neto0730'
 engine = sqlalchemy.create_engine(db)
 connection = engine.connect()
-
 
 print('название и год выхода альбомов, вышедших в 2018 году:')
 res = connection.execute("""SELECT title_album, year_release 
@@ -79,6 +52,114 @@ print('название треков, которые содержат слово
 res = connection.execute("""SELECT title_track
 FROM track
 WHERE title_track ILIKE '%%мой%%' OR title_track ILIKE '%%my%%'; """).fetchall()
+
+pprint(res)
+print('________________')
+
+print('_______________HW5_____________')
+
+pprint('количество исполнителей в каждом жанре;')
+res = connection.execute("""SELECT g.title_genre, COUNT(a.artist_id) count 
+FROM genre g
+JOIN artist_genre ag ON g.genre_id = ag.genre_genre_id
+JOIN artist a ON ag.artist_artist_id = a.artist_id
+GROUP BY  g.name
+ORDER BY  count DESC; """).fetchall()
+
+pprint(res)
+print('________________')
+
+pprint('количество треков, вошедших в альбомы 2019-2020 годов;')
+res = connection.execute("""SELECT COUNT(t.track_id) count FROM album a
+JOIN track t ON t.album_id = a.album_id
+WHERE a.year_release >= 2019
+AND a.year_release <= 2020; """).fetchall()
+
+pprint(res)
+print('________________')
+
+pprint('средняя продолжительность треков по каждому альбому;')
+res = connection.execute("""SELECT a.title_album, AVG(t.duration) avg 
+FROM album a
+JOIN track t ON t.album_id = a.album_id
+GROUP by a.title_album
+ORDER BY avg DESC; """).fetchall()
+
+pprint(res)
+print('________________')
+
+pprint('все исполнители, которые не выпустили альбомы в 2020 году;')
+res = connection.execute("""SELECT a.name FROM artist a
+JOIN artist_album aa ON a.artist_id = aa.artist_artist_id
+JOIN album al ON aa.album_album_id = al.album_id
+WHERE NOT EXISTS(SELECT * FROM artist WHERE al.year_release = 2020)
+GROUP BY a.name
+ORDER BY a.name; """).fetchall()
+
+pprint(res)
+print('________________')
+
+pprint('названия сборников, в которых присутствует конкретный исполнитель (выберите сами);')
+res = connection.execute("""SELECT c.name FROM collection c
+JOIN track_collection tc ON c.collection_id = tc.collection_collection_id
+JOIN track t ON tc.track_track_id = t.track_id
+JOIN album a ON t.album_album_id = a.album_id
+JOIN artist_album aa ON al.album_id = aa.album_album_id
+JOIN artist a on a.artist_id = aa.artist_artist_id
+WHERE a.name = 'Ария'
+GROUP BY c.name
+ORDER BY c.name; """).fetchall()
+
+pprint(res)
+print('________________')
+pprint('название альбомов, в которых присутствуют исполнители более 1 жанра;')
+res = connection.execute("""SELECT a.name 
+FROM album a
+JOIN artist_album aa ON al.album_id = aa.album_album_id
+JOIN artist a ON aa.artist_artist_id = a.artist_id
+JOIN artist_genre ag ON ag.artist_artist_id = a.artist_id
+JOIN genre g ON ag.genre_genre_id = g.genre_id
+GROUP BY a.name
+HAVING COUNT(g.genre_id) > 1; """).fetchall()
+
+pprint(res)
+print('________________')
+
+pprint('наименование треков, которые не входят в сборники;')
+res = connection.execute("""
+SELECT t.name 
+FROM track t
+LEFT JOIN track_collection tc ON tc.track_track_id = t.track_id 
+WHERE tc.collection_collection_id IS NULL
+GROUP BY t.name; """).fetchall()
+
+pprint(res)
+print('________________')
+
+pprint('исполнителя(-ей), написавшего самый короткий по продолжительности трек (теоретически таких треков может быть '
+       'несколько);')
+res = connection.execute("""
+SELECT a.name FROM artist a
+JOIN artist_album aa ON a.artist_id = aa.artist_artist_id
+JOIN album al ON aa.album_album_id = a.album_id
+JOIN track t ON t.album_id = a.album_id
+WHERE t.duration = (SELECT MIN(duration) from track)
+GROUP BY a.name
+ORDER BY a.name """).fetchall()
+
+pprint(res)
+print('________________')
+
+pprint('название альбомов, содержащих наименьшее количество треков.')
+res = connection.execute("""
+SELECT a.name 
+FROM track t 
+JOIN album a ON a.album_id = t.album_id
+GROUP BY a.title_album 
+HAVING COUNT(t.track_id) = (SELECT MIN(count) FROM 
+                                (SELECT album.title_album, COUNT(track.track_id) count FROM track
+                                JOIN album ON album.album_id = track.album_id
+                                GROUP BY album.title_album) as c; """).fetchall()
 
 pprint(res)
 print('________________')
